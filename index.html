@@ -1208,25 +1208,41 @@
         }
       });
 
-      // ==========================
-      // Calendario (.ics) SIN hora de finalización
-      // ==========================
-      function pad(n) {
-        return String(n).padStart(2, "0");
-      }
-      function toICSDate(iso) {
-        const d = new Date(iso);
-        return (
-          d.getUTCFullYear() +
-          pad(d.getUTCMonth() + 1) +
-          pad(d.getUTCDate()) +
-          "T" +
-          pad(d.getUTCHours()) +
-          pad(d.getUTCMinutes()) +
-          pad(d.getUTCSeconds()) +
-          "Z"
-        );
-      }
+      document
+        .getElementById("addCalendarBtn")
+        .addEventListener("click", () => {
+          const title = encodeURIComponent(
+            "15 Años de Paula Estefanía — Fiesta Veneciana",
+          );
+          const details = encodeURIComponent(
+            "Dress code: Formal con antifaz elegante. Color reservado: Silver glitter.",
+          );
+          const location = encodeURIComponent(EVENT.place);
+
+          // formato Google: YYYYMMDDTHHmmssZ (UTC)
+          function toGoogleDate(iso) {
+            const d = new Date(iso);
+            return d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+          }
+
+          const start = toGoogleDate(EVENT.startISO);
+
+          // duración opcional (4 horas por ejemplo)
+          const endDate = new Date(
+            new Date(EVENT.startISO).getTime() + 4 * 60 * 60 * 1000,
+          );
+          const end =
+            endDate.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+          const url =
+            `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+            `&text=${title}` +
+            `&details=${details}` +
+            `&location=${location}` +
+            `&dates=${start}/${end}`;
+
+          window.open(url, "_blank");
+        });
 
       $("#addCalendarBtn").addEventListener("click", () => {
         const dtStart = toICSDate(EVENT.startISO);
@@ -1260,16 +1276,25 @@
 
       let isPlaying = false;
 
-      window.addEventListener("DOMContentLoaded", async () => {
-        try {
-          await audio.play();
-          isPlaying = true;
-          musicLbl.textContent = "Pausar";
-        } catch {
-          musicLbl.textContent = "Activar";
-        }
-      });
+      // 👉 intentar autoplay silencioso (algunos navegadores lo permiten)
+      audio.muted = true;
+      audio.play().catch(() => {});
 
+      // 👉 primer clic en cualquier parte = activar sonido
+      document.addEventListener(
+        "click",
+        async () => {
+          if (!isPlaying) {
+            audio.muted = false;
+            await audio.play();
+            isPlaying = true;
+            musicLbl.textContent = "Pausar";
+          }
+        },
+        { once: true },
+      );
+
+      // botón manual
       musicBtn.addEventListener("click", async () => {
         if (!isPlaying) {
           await audio.play();
