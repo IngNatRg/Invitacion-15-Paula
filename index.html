@@ -1227,12 +1227,12 @@
 
           const start = toGoogleDate(EVENT.startISO);
 
-          // duración opcional (4 horas por ejemplo)
-          const endDate = new Date(
-            new Date(EVENT.startISO).getTime() + 4 * 60 * 60 * 1000,
-          );
+          // ✅ Hora final fija: 15 marzo 2026 - 2:30 a.m. (Bogotá)
           const end =
-            endDate.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+            new Date("2026-03-15T02:30:00-05:00")
+              .toISOString()
+              .replace(/[-:]/g, "")
+              .split(".")[0] + "Z";
 
           const url =
             `https://calendar.google.com/calendar/render?action=TEMPLATE` +
